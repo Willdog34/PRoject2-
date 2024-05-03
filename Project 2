@@ -1,0 +1,80 @@
+use std::fs::File;
+use std::io::{self, BufRead, BufReader};
+use std::f64::consts::PI;
+
+fn main() {
+    let filename = "input.txt"; // Replace with your file path
+    if let Err(e) = read_and_process_file(filename) {
+        println!("Error reading file: {}", e);
+    }
+}
+
+fn read_and_process_file(filename: &str) -> io::Result<()> {
+    let file = File::open(filename)?;
+    let reader = BufReader::new(file);
+
+    for line in reader.lines() {
+        let line = line?;
+        parse_and_execute(&line);
+    }
+
+    Ok(())
+}
+
+fn parse_and_execute(line: &str) {
+    let parts: Vec<&str> = line.split_whitespace().collect();
+    if parts.is_empty() {
+        return;
+    }
+
+    match parts[0] {
+        "Linear" => {
+            if parts.len() < 6 {
+                println!("Insufficient data for linear motion");
+                return;
+            }
+            let start_x = parts[1].parse::<f64>().unwrap();
+            let start_y = parts[2].parse::<f64>().unwrap();
+            let end_x = parts[3].parse::<f64>().unwrap();
+            let end_y = parts[4].parse::<f64>().unwrap();
+            let steps = parts[5].parse::<usize>().unwrap();
+            linear_motion(start_x, start_y, end_x, end_y, steps);
+        },
+        "Rotational" => {
+            if parts.len() < 7 {
+                println!("Insufficient data for rotational motion");
+                return;
+            }
+            let center_x = parts[1].parse::<f64>().unwrap();
+            let center_y = parts[2].parse::<f64>().unwrap();
+            let radius = parts[3].parse::<f64>().unwrap();
+            let start_angle = parts[4].parse::<f64>().unwrap() * PI / 180.0;
+            let end_angle = parts[5].parse::<f64>().unwrap() * PI / 180.0;
+            rotational_motion(center_x, center_y, radius, start_angle, end_angle);
+        },
+        _ => println!("Unknown command"),
+    }
+}
+
+fn linear_motion(start_x: f64, start_y: f64, end_x: f64, end_y: f64, steps: usize) {
+    let dx = (end_x - start_x) / steps as f64;
+    let dy = (end_y - start_y) / steps as f64;
+
+    for i in 0..=steps {
+        let x = start_x + dx * i as f64;
+        let y = start_y + dy * i as f64;
+        println!("{:.2}, {:.2}", x, y);
+    }
+}
+
+fn rotational_motion(center_x: f64, center_y: f64, radius: f64, start_angle: f64, end_angle: f64) {
+    let step_angle = 5.0 * PI / 180.0; // 5 degrees in radians
+    let mut angle = start_angle;
+
+    while angle <= end_angle {
+        let x = center_x + radius * angle.cos();
+        let y = center_y + radius * angle.sin();
+        println!("{:.2}, {:.2}", x, y);
+        angle += step_angle;
+    }
+}
